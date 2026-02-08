@@ -75,7 +75,8 @@ describe('API Response Utils', () => {
       expect(res.json).toHaveBeenCalledWith({
         success: false,
         error: 'Invalid input',
-        errorCode: ErrorCode.INVALID_INPUT,
+        code: ErrorCode.INVALID_INPUT,
+        details: undefined,
       });
     });
 
@@ -88,7 +89,8 @@ describe('API Response Utils', () => {
       expect(res.json).toHaveBeenCalledWith({
         success: false,
         error: 'Not found',
-        errorCode: ErrorCode.NOT_FOUND,
+        code: ErrorCode.NOT_FOUND,
+        details: undefined,
       });
     });
 
@@ -102,7 +104,7 @@ describe('API Response Utils', () => {
       expect(res.json).toHaveBeenCalledWith({
         success: false,
         error: 'DNS error',
-        errorCode: ErrorCode.DNS_REGISTRATION_FAILED,
+        code: ErrorCode.DNS_REGISTRATION_FAILED,
         details,
       });
     });
@@ -116,7 +118,8 @@ describe('API Response Utils', () => {
       expect(res.json).toHaveBeenCalledWith({
         success: false,
         error: 'Internal server error',
-        errorCode: ErrorCode.INTERNAL_ERROR,
+        code: ErrorCode.INTERNAL_ERROR,
+        details: undefined,
       });
     });
 

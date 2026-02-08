@@ -5,36 +5,36 @@ import { ErrorCode } from '../../shared/types.js';
 describe('Validation Utils', () => {
   describe('validateWorkstationName', () => {
     it('should accept valid alphanumeric names', () => {
-      expect(validateWorkstationName('desk1')).toBe(true);
-      expect(validateWorkstationName('server123')).toBe(true);
-      expect(validateWorkstationName('my-workstation')).toBe(true);
-      expect(validateWorkstationName('test')).toBe(true);
+      expect(validateWorkstationName('desk1').valid).toBe(true);
+      expect(validateWorkstationName('server123').valid).toBe(true);
+      expect(validateWorkstationName('my-workstation').valid).toBe(true);
+      expect(validateWorkstationName('test').valid).toBe(true);
     });
 
     it('should accept names with hyphens', () => {
-      expect(validateWorkstationName('my-desk-1')).toBe(true);
-      expect(validateWorkstationName('test-server-prod')).toBe(true);
+      expect(validateWorkstationName('my-desk-1').valid).toBe(true);
+      expect(validateWorkstationName('test-server-prod').valid).toBe(true);
     });
 
     it('should reject names with invalid characters', () => {
-      expect(validateWorkstationName('desk_1')).toBe(false); // underscore
-      expect(validateWorkstationName('desk.1')).toBe(false); // dot
-      expect(validateWorkstationName('desk 1')).toBe(false); // space
-      expect(validateWorkstationName('desk@1')).toBe(false); // special char
+      expect(validateWorkstationName('desk_1').valid).toBe(false); // underscore
+      expect(validateWorkstationName('desk.1').valid).toBe(false); // dot
+      expect(validateWorkstationName('desk 1').valid).toBe(false); // space
+      expect(validateWorkstationName('desk@1').valid).toBe(false); // special char
     });
 
     it('should reject empty names', () => {
-      expect(validateWorkstationName('')).toBe(false);
+      expect(validateWorkstationName('').valid).toBe(false);
     });
 
     it('should reject names that are too long', () => {
       const longName = 'a'.repeat(64);
-      expect(validateWorkstationName(longName)).toBe(false);
+      expect(validateWorkstationName(longName).valid).toBe(false);
     });
 
     it('should reject names starting or ending with hyphen', () => {
-      expect(validateWorkstationName('-desk')).toBe(false);
-      expect(validateWorkstationName('desk-')).toBe(false);
+      expect(validateWorkstationName('-desk').valid).toBe(false);
+      expect(validateWorkstationName('desk-').valid).toBe(false);
     });
   });
 
