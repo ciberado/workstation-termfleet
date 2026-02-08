@@ -1,0 +1,26 @@
+import { Request, Response, NextFunction } from 'express';
+import { logger } from '../logger.js';
+import { ErrorCode } from '../../shared/types.js';
+
+/**
+ * Global error handling middleware
+ */
+export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction): void {
+  logger.error('Unhandled error', {
+    error: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    requestId: req.id,
+  });
+
+  // Don't send stack traces in production
+  const details = process.env.NODE_ENV === 'development' ? err.stack : undefined;
+
+  res.status(500).json({
+    success: false,
+    error: 'Internal server error',
+    code: ErrorCode.INTERNAL_ERROR,
+    details,
+  });
+}
