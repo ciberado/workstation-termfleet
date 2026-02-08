@@ -20,7 +20,7 @@ export default defineConfig({
     host: '0.0.0.0', // Allow external connections
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:3002'
+      '/api': 'http://localhost:3000'
     }
   }
 })
