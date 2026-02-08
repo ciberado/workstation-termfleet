@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import { sendSuccess, sendError } from '../apiResponse';
-import { ErrorCode } from '../../../shared/types';
+import { sendSuccess, sendError } from './apiResponse.js';
+import { ErrorCode } from '../../shared/types.js';
 import type { Response } from 'express';
 
 // Mock Response object
@@ -69,13 +69,13 @@ describe('API Response Utils', () => {
     it('should send error response with default 400 status', () => {
       const res = createMockResponse();
 
-      sendError(res, 'Invalid input', ErrorCode.INVALID_NAME);
+      sendError(res, 'Invalid input', ErrorCode.INVALID_INPUT);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
         error: 'Invalid input',
-        errorCode: ErrorCode.INVALID_NAME,
+        errorCode: ErrorCode.INVALID_INPUT,
       });
     });
 
@@ -96,13 +96,13 @@ describe('API Response Utils', () => {
       const res = createMockResponse();
       const details = 'DNS lookup failed: NXDOMAIN';
 
-      sendError(res, 'DNS error', ErrorCode.DNS_PROPAGATION_FAILED, 500, details);
+      sendError(res, 'DNS error', ErrorCode.DNS_REGISTRATION_FAILED, 500, details);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
         error: 'DNS error',
-        errorCode: ErrorCode.DNS_PROPAGATION_FAILED,
+        errorCode: ErrorCode.DNS_REGISTRATION_FAILED,
         details,
       });
     });

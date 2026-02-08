@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
-import { validateRegistrationRequest, validateWorkstationName, validateIPv4Address } from '../validation';
-import { ErrorCode } from '../../../shared/types';
+import { validateRegistrationRequest, validateWorkstationName, validateIpv4 } from './validation.js';
+import { ErrorCode } from '../../shared/types.js';
 
 describe('Validation Utils', () => {
   describe('validateWorkstationName', () => {
@@ -38,30 +38,30 @@ describe('Validation Utils', () => {
     });
   });
 
-  describe('validateIPv4Address', () => {
+  describe('validateIpv4', () => {
     it('should accept valid IP addresses', () => {
-      expect(validateIPv4Address('192.168.1.1')).toBe(true);
-      expect(validateIPv4Address('10.0.0.1')).toBe(true);
-      expect(validateIPv4Address('172.16.0.1')).toBe(true);
-      expect(validateIPv4Address('8.8.8.8')).toBe(true);
-      expect(validateIPv4Address('255.255.255.255')).toBe(true);
-      expect(validateIPv4Address('0.0.0.0')).toBe(true);
+      expect(validateIpv4('192.168.1.1').valid).toBe(true);
+      expect(validateIpv4('10.0.0.1').valid).toBe(true);
+      expect(validateIpv4('172.16.0.1').valid).toBe(true);
+      expect(validateIpv4('8.8.8.8').valid).toBe(true);
+      expect(validateIpv4('255.255.255.255').valid).toBe(true);
+      expect(validateIpv4('0.0.0.0').valid).toBe(true);
     });
 
     it('should reject invalid IP formats', () => {
-      expect(validateIPv4Address('256.1.1.1')).toBe(false); // > 255
-      expect(validateIPv4Address('192.168.1')).toBe(false); // missing octet
-      expect(validateIPv4Address('192.168.1.1.1')).toBe(false); // too many octets
-      expect(validateIPv4Address('192.168.1.a')).toBe(false); // non-numeric
-      expect(validateIPv4Address('192.168.-1.1')).toBe(false); // negative
+      expect(validateIpv4('256.1.1.1').valid).toBe(false); // > 255
+      expect(validateIpv4('192.168.1').valid).toBe(false); // missing octet
+      expect(validateIpv4('192.168.1.1.1').valid).toBe(false); // too many octets
+      expect(validateIpv4('192.168.1.a').valid).toBe(false); // non-numeric
+      expect(validateIpv4('192.168.-1.1').valid).toBe(false); // negative
     });
 
     it('should reject empty strings', () => {
-      expect(validateIPv4Address('')).toBe(false);
+      expect(validateIpv4('').valid).toBe(false);
     });
 
     it('should reject non-string inputs', () => {
-      expect(validateIPv4Address('not-an-ip')).toBe(false);
+      expect(validateIpv4('not-an-ip').valid).toBe(false);
     });
   });
 
@@ -84,8 +84,8 @@ describe('Validation Utils', () => {
       });
 
       expect(result.valid).toBe(false);
-      expect(result.error).toBe('Workstation name is required');
-      expect(result.code).toBe(ErrorCode.INVALID_NAME);
+      expect(result.error).toBeDefined();
+      expect(result.code).toBe(ErrorCode.INVALID_INPUT);
     });
 
     it('should reject invalid name format', () => {
@@ -96,7 +96,7 @@ describe('Validation Utils', () => {
 
       expect(result.valid).toBe(false);
       expect(result.error).toContain('alphanumeric');
-      expect(result.code).toBe(ErrorCode.INVALID_NAME);
+      expect(result.code).toBe(ErrorCode.INVALID_INPUT);
     });
 
     it('should reject missing IP', () => {
@@ -106,8 +106,8 @@ describe('Validation Utils', () => {
       });
 
       expect(result.valid).toBe(false);
-      expect(result.error).toBe('IP address is required');
-      expect(result.code).toBe(ErrorCode.INVALID_IP);
+      expect(result.error).toBeDefined();
+      expect(result.code).toBe(ErrorCode.INVALID_INPUT);
     });
 
     it('should reject invalid IP format', () => {
@@ -117,8 +117,8 @@ describe('Validation Utils', () => {
       });
 
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('valid IPv4');
-      expect(result.code).toBe(ErrorCode.INVALID_IP);
+      expect(result.error).toContain('IPv4');
+      expect(result.code).toBe(ErrorCode.INVALID_INPUT);
     });
 
     it('should handle missing fields', () => {

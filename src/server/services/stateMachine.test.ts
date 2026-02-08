@@ -1,300 +1,173 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
-import { STATE_TRANSITIONS, applyStateMachine, shouldRemoveWorkstation } from '../stateMachine';
-import { Workstation, WorkstationStatus } from '../../../shared/types';
+import { describe, it, expect, beforeEach } from '@jest/globals';
+import { STATE_TRANSITIONS, applyStateMachine, shouldRemoveWorkstation } from './stateMachine.js';
+import { Workstation, WorkstationStatus } from '../../shared/types.js';
 
-describe('State Machine', () => {
+describe('stateMachine', () => {
+  let mockWorkstation: Workstation;
+
   describe('STATE_TRANSITIONS', () => {
-    it('should have all required transitions', () => {
-      const transitionMap = new Map<string, number>();
+    it('should have correct number of transitions', () => {
+      expect(STATE_TRANSITIONS.length).toBe(6);
+    });
 
-      for (const transition of STATE_TRANSITIONS) {
-        const key = `${transition.from}->${transition.to}`;
-        transitionMap.set(key, (transitionMap.get(key) || 0) + 1);
-      }
-
-      // Verify key transitions exist
-      expect(transitionMap.has('starting->online')).toBe(true);
-      expect(transitionMap.has('starting->unknown')).toBe(true);
-      expect(transitionMap.has('online->online')).toBe(true);
-      expect(transitionMap.has('online->unknown')).toBe(true);
-      expect(transitionMap.has('unknown->online')).toBe(true);
-      expect(transitionMap.has('unknown->terminated')).toBe(true);
+    it('should have transitions for all critical paths', () => {
+      const transitionPairs = STATE_TRANSITIONS.map((t) => `${t.from}->${t.to}`);
+      
+      expect(transitionPairs).toContain('starting->online');
+      expect(transitionPairs).toContain('starting->unknown');
+      expect(transitionPairs).toContain('online->online');
+      expect(transitionPairs).toContain('online->unknown');
+      expect(transitionPairs).toContain('unknown->online');
+      expect(transitionPairs).toContain('unknown->terminated');
     });
   });
 
   describe('applyStateMachine', () => {
-    const now = new Date().toISOString();
-
-    it('should transition starting -> online on successful health check', () => {
-      const workstation: Workstation = {
-        id: 1,
+    beforeEach(() => {
+      mockWorkstation = {
+        id: 'ws-1',
         name: 'desk1',
         ip_address: '192.168.1.100',
         domain_name: 'desk1.ws.aprender.cloud',
         status: WorkstationStatus.STARTING,
-        created_at: now,
+        created_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
         last_check: null,
-        state_changed_at: now,
+        state_changed_at: new Date().toISOString(),
         dns_error: null,
-        started_at: now,
+        started_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
         unknown_since: null,
         terminated_at: null,
       };
-
-      const result = applyStateMachine(workstation, true);
-
-      expect(result).toBeDefined();
-      expect(result?.status).toBe(WorkstationStatus.ONLINE);
-      expect(result?.last_check).toBeDefined();
-      expect(result?.unknown_since).toBe(null);
     });
 
-    it('should transition starting -> unknown after 10 minutes', () => {
-      const tenMinutesAgo = new Date(Date.now() - 11 * 60 * 1000).toISOString();
+    it('should transition STARTING→ONLINE on successful health check', () => {
+      const result = applyStateMachine(mockWorkstation, true);
 
-      const workstation: Workstation = {
-        id: 1,
-        name: 'desk1',
-        ip_address: '192.168.1.100',
-        domain_name: 'desk1.ws.aprender.cloud',
-        status: WorkstationStatus.STARTING,
-        created_at: tenMinutesAgo,
-        last_check: null,
-        state_changed_at: tenMinutesAgo,
-        dns_error: null,
-        started_at: tenMinutesAgo,
-        unknown_since: null,
-        terminated_at: null,
-      };
-
-      const result = applyStateMachine(workstation, false);
-
-      expect(result).toBeDefined();
-      expect(result?.status).toBe(WorkstationStatus.UNKNOWN);
-      expect(result?.unknown_since).toBeDefined();
+      expect(result).not.toBeNull();
+      expect(result?.newStatus).toBe(WorkstationStatus.ONLINE);
+      expect(result?.updates.status).toBe(WorkstationStatus.ONLINE);
+      expect(result?.updates.last_check).toBeDefined();
+      expect(result?.updates.unknown_since).toBe(null);
     });
 
-    it('should not transition starting -> unknown before 10 minutes', () => {
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    it('should transition STARTING→UNKNOWN after 10 min timeout', () => {
+      mockWorkstation.started_at = new Date(Date.now() - 11 * 60 * 1000).toISOString();
 
-      const workstation: Workstation = {
-        id: 1,
-        name: 'desk1',
-        ip_address: '192.168.1.100',
-        domain_name: 'desk1.ws.aprender.cloud',
-        status: WorkstationStatus.STARTING,
-        created_at: fiveMinutesAgo,
-        last_check: null,
-        state_changed_at: fiveMinutesAgo,
-        dns_error: null,
-        started_at: fiveMinutesAgo,
-        unknown_since: null,
-        terminated_at: null,
-      };
+      const result = applyStateMachine(mockWorkstation, false);
 
-      const result = applyStateMachine(workstation, false);
+      expect(result).not.toBeNull();
+      expect(result?.newStatus).toBe(WorkstationStatus.UNKNOWN);
+      expect(result?.updates.status).toBe(WorkstationStatus.UNKNOWN);
+      expect(result?.updates.unknown_since).toBeDefined();
+    });
+
+    it('should stay STARTING if health check fails but timeout not reached', () => {
+      mockWorkstation.started_at = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+      const result = applyStateMachine(mockWorkstation, false);
 
       expect(result).toBeNull();
     });
 
-    it('should transition online -> unknown after 1 minute', () => {
-      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    it('should transition ONLINE→ONLINE on successful health check', () => {
+      mockWorkstation.status = WorkstationStatus.ONLINE;
+      mockWorkstation.last_check = new Date(Date.now() - 30 * 1000).toISOString();
 
-      const workstation: Workstation = {
-        id: 1,
-        name: 'desk1',
-        ip_address: '192.168.1.100',
-        domain_name: 'desk1.ws.aprender.cloud',
-        status: WorkstationStatus.ONLINE,
-        created_at: now,
-        last_check: twoMinutesAgo,
-        state_changed_at: now,
-        dns_error: null,
-        started_at: now,
-        unknown_since: null,
-        terminated_at: null,
-      };
+      const result = applyStateMachine(mockWorkstation, true);
 
-      const result = applyStateMachine(workstation, false);
-
-      expect(result).toBeDefined();
-      expect(result?.status).toBe(WorkstationStatus.UNKNOWN);
+      expect(result).not.toBeNull();
+      expect(result?.newStatus).toBe(WorkstationStatus.ONLINE);
+      expect(result?.updates.last_check).toBeDefined();
     });
 
-    it('should keep online -> online on successful health check', () => {
-      const workstation: Workstation = {
-        id: 1,
-        name: 'desk1',
-        ip_address: '192.168.1.100',
-        domain_name: 'desk1.ws.aprender.cloud',
-        status: WorkstationStatus.ONLINE,
-        created_at: now,
-        last_check: now,
-        state_changed_at: now,
-        dns_error: null,
-        started_at: now,
-        unknown_since: null,
-        terminated_at: null,
-      };
+    it('should transition ONLINE→UNKNOWN after 1 min no response', () => {
+      mockWorkstation.status = WorkstationStatus.ONLINE;
+      mockWorkstation.last_check = new Date(Date.now() - 2 * 60 * 1000).toISOString();
 
-      const result = applyStateMachine(workstation, true);
+      const result = applyStateMachine(mockWorkstation, false);
 
-      expect(result).toBeDefined();
-      expect(result?.status).toBe(WorkstationStatus.ONLINE);
-      expect(result?.last_check).toBeDefined();
+      expect(result).not.toBeNull();
+      expect(result?.newStatus).toBe(WorkstationStatus.UNKNOWN);
+      expect(result?.updates.status).toBe(WorkstationStatus.UNKNOWN);
+      expect(result?.updates.unknown_since).toBeDefined();
     });
 
-    it('should transition unknown -> online on recovery', () => {
-      const workstation: Workstation = {
-        id: 1,
-        name: 'desk1',
-        ip_address: '192.168.1.100',
-        domain_name: 'desk1.ws.aprender.cloud',
-        status: WorkstationStatus.UNKNOWN,
-        created_at: now,
-        last_check: now,
-        state_changed_at: now,
-        dns_error: null,
-        started_at: now,
-        unknown_since: now,
-        terminated_at: null,
-      };
+    it('should transition UNKNOWN→ONLINE on successful health check (recovery)', () => {
+      mockWorkstation.status = WorkstationStatus.UNKNOWN;
+      mockWorkstation.unknown_since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
-      const result = applyStateMachine(workstation, true);
+      const result = applyStateMachine(mockWorkstation, true);
 
-      expect(result).toBeDefined();
-      expect(result?.status).toBe(WorkstationStatus.ONLINE);
-      expect(result?.unknown_since).toBe(null);
+      expect(result).not.toBeNull();
+      expect(result?.newStatus).toBe(WorkstationStatus.ONLINE);
+      expect(result?.updates.status).toBe(WorkstationStatus.ONLINE);
+      expect(result?.updates.last_check).toBeDefined();
+      expect(result?.updates.unknown_since).toBe(null);
     });
 
-    it('should transition unknown -> terminated after 10 minutes', () => {
-      const elevenMinutesAgo = new Date(Date.now() - 11 * 60 * 1000).toISOString();
+    it('should transition UNKNOWN→TERMINATED after 10 min in unknown', () => {
+      mockWorkstation.status = WorkstationStatus.UNKNOWN;
+      mockWorkstation.unknown_since = new Date(Date.now() - 11 * 60 * 1000).toISOString();
 
-      const workstation: Workstation = {
-        id: 1,
-        name: 'desk1',
-        ip_address: '192.168.1.100',
-        domain_name: 'desk1.ws.aprender.cloud',
-        status: WorkstationStatus.UNKNOWN,
-        created_at: now,
-        last_check: now,
-        state_changed_at: now,
-        dns_error: null,
-        started_at: now,
-        unknown_since: elevenMinutesAgo,
-        terminated_at: null,
-      };
+      const result = applyStateMachine(mockWorkstation, false);
 
-      const result = applyStateMachine(workstation, false);
-
-      expect(result).toBeDefined();
-      expect(result?.status).toBe(WorkstationStatus.TERMINATED);
-      expect(result?.terminated_at).toBeDefined();
+      expect(result).not.toBeNull();
+      expect(result?.newStatus).toBe(WorkstationStatus.TERMINATED);
+      expect(result?.updates.status).toBe(WorkstationStatus.TERMINATED);
+      expect(result?.updates.terminated_at).toBeDefined();
     });
 
     it('should return null when no transition applies', () => {
-      const workstation: Workstation = {
-        id: 1,
-        name: 'desk1',
-        ip_address: '192.168.1.100',
-        domain_name: 'desk1.ws.aprender.cloud',
-        status: WorkstationStatus.TERMINATED,
-        created_at: now,
-        last_check: now,
-        state_changed_at: now,
-        dns_error: null,
-        started_at: now,
-        unknown_since: null,
-        terminated_at: now,
-      };
+      mockWorkstation.status = WorkstationStatus.TERMINATED;
 
-      const result = applyStateMachine(workstation, false);
+      const result = applyStateMachine(mockWorkstation, true);
 
       expect(result).toBeNull();
     });
   });
 
   describe('shouldRemoveWorkstation', () => {
-    const now = new Date().toISOString();
-
-    it('should return true for terminated workstations after 50 minutes', () => {
-      const fiftyOneMinutesAgo = new Date(Date.now() - 51 * 60 * 1000).toISOString();
-
-      const workstation: Workstation = {
-        id: 1,
+    beforeEach(() => {
+      mockWorkstation = {
+        id: 'ws-1',
         name: 'desk1',
         ip_address: '192.168.1.100',
         domain_name: 'desk1.ws.aprender.cloud',
         status: WorkstationStatus.TERMINATED,
-        created_at: now,
-        last_check: now,
-        state_changed_at: now,
+        created_at: new Date().toISOString(),
+        last_check: null,
+        state_changed_at: new Date().toISOString(),
         dns_error: null,
-        started_at: now,
+        started_at: null,
         unknown_since: null,
-        terminated_at: fiftyOneMinutesAgo,
+        terminated_at: new Date(Date.now() - 51 * 60 * 1000).toISOString(),
       };
-
-      expect(shouldRemoveWorkstation(workstation)).toBe(true);
     });
 
-    it('should return false for terminated workstations before 50 minutes', () => {
-      const fortyMinutesAgo = new Date(Date.now() - 40 * 60 * 1000).toISOString();
-
-      const workstation: Workstation = {
-        id: 1,
-        name: 'desk1',
-        ip_address: '192.168.1.100',
-        domain_name: 'desk1.ws.aprender.cloud',
-        status: WorkstationStatus.TERMINATED,
-        created_at: now,
-        last_check: now,
-        state_changed_at: now,
-        dns_error: null,
-        started_at: now,
-        unknown_since: null,
-        terminated_at: fortyMinutesAgo,
-      };
-
-      expect(shouldRemoveWorkstation(workstation)).toBe(false);
+    it('should return true for workstation terminated 50+ minutes ago', () => {
+      const result = shouldRemoveWorkstation(mockWorkstation);
+      expect(result).toBe(true);
     });
 
-    it('should return false for non-terminated workstations', () => {
-      const workstation: Workstation = {
-        id: 1,
-        name: 'desk1',
-        ip_address: '192.168.1.100',
-        domain_name: 'desk1.ws.aprender.cloud',
-        status: WorkstationStatus.ONLINE,
-        created_at: now,
-        last_check: now,
-        state_changed_at: now,
-        dns_error: null,
-        started_at: now,
-        unknown_since: null,
-        terminated_at: null,
-      };
-
-      expect(shouldRemoveWorkstation(workstation)).toBe(false);
+    it('should return false for workstation terminated < 50 minutes ago', () => {
+      mockWorkstation.terminated_at = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      
+      const result = shouldRemoveWorkstation(mockWorkstation);
+      expect(result).toBe(false);
     });
 
-    it('should return false for terminated without terminated_at', () => {
-      const workstation: Workstation = {
-        id: 1,
-        name: 'desk1',
-        ip_address: '192.168.1.100',
-        domain_name: 'desk1.ws.aprender.cloud',
-        status: WorkstationStatus.TERMINATED,
-        created_at: now,
-        last_check: now,
-        state_changed_at: now,
-        dns_error: null,
-        started_at: now,
-        unknown_since: null,
-        terminated_at: null,
-      };
+    it('should return false for non-terminated workstation', () => {
+      mockWorkstation.status = WorkstationStatus.ONLINE;
+      
+      const result = shouldRemoveWorkstation(mockWorkstation);
+      expect(result).toBe(false);
+    });
 
-      expect(shouldRemoveWorkstation(workstation)).toBe(false);
+    it('should return false for terminated workstation with null terminated_at', () => {
+      mockWorkstation.terminated_at = null;
+      
+      const result = shouldRemoveWorkstation(mockWorkstation);
+      expect(result).toBe(false);
     });
   });
 });
