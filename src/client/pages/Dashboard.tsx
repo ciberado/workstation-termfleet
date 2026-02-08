@@ -11,8 +11,8 @@ import {
   Badge,
 } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
-import { WorkstationCard } from '../components/WorkstationCard';
-import { fetchWorkstations } from '../services/api';
+import { WorkstationCard } from '@/client/components/WorkstationCard';
+import { fetchWorkstations } from '@/client/services/api';
 import { Workstation, WorkstationStatus } from '@/shared/types';
 
 function Dashboard() {
