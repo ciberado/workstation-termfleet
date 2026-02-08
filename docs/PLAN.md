@@ -659,7 +659,7 @@ This document outlines a phased approach to implementing Termfleet and the Works
 - [x] Systemd service files ✅
   - Termfleet service ✅ (example provided)
   - Workstation registration service ✅ (in workstation repo)
-- [x] Reverse proxy configuration (nginx) ✅
+- [x] Reverse proxy configuration (caddy) ✅
   - HTTPS setup ✅ (Let's Encrypt guide)
   - URL routing ✅
   - Port configuration ✅

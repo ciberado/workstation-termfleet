@@ -82,8 +82,7 @@ Access: https://termfleet.yourdomain.com
 | Application logs (JSON) | `/opt/termfleet/logs/combined.log` |
 | Error logs only (JSON) | `/opt/termfleet/logs/error.log` |
 | systemd journal | `sudo journalctl -u termfleet` |
-| Nginx access | `/var/log/nginx/termfleet-access.log` |
-| Nginx errors | `/var/log/nginx/termfleet-error.log` |
+| Caddy logs | `/var/log/caddy/termfleet.log` |
 
 ### Real-Time Log Monitoring
 
@@ -496,10 +495,10 @@ cat /opt/termfleet/.env | grep WORKSTATION_CHECK_INTERVAL
 # Check if frontend was built
 ls -la /opt/termfleet/dist/client/
 
-# Check Nginx reverse proxy
-sudo nginx -t
-sudo systemctl status nginx
-tail -f /var/log/nginx/termfleet-error.log
+# Check Caddy reverse proxy
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl status caddy
+sudo journalctl -u caddy -n 50
 
 # Check Node.js is serving correctly
 curl http://localhost:3000/
@@ -514,11 +513,11 @@ curl http://localhost:3000/
    sudo systemctl restart termfleet
    ```
 
-2. **Nginx Misconfiguration:**
+**2. Caddy Misconfiguration:**
    ```bash
-   sudo nginx -t
+   sudo caddy validate --config /etc/caddy/Caddyfile
    # Fix errors shown
-   sudo systemctl reload nginx
+   sudo systemctl reload caddy
    ```
 
 3. **Static File Permission Issues:**
@@ -555,12 +554,13 @@ cat /opt/termfleet/logs/combined.log | jq 'select(.message | contains("Rate limi
 
 2. **Abusive IP:**
    ```bash
-   # Block at Nginx level
-   # Add to /etc/nginx/sites-available/termfleet:
-   deny 1.2.3.4;
+   # Block at Caddy level
+   # Add to /etc/caddy/Caddyfile under your site:
+   @blocked remote_ip 1.2.3.4
+   respond @blocked 403
    
-   sudo nginx -t
-   sudo systemctl reload nginx
+   sudo caddy validate --config /etc/caddy/Caddyfile
+   sudo systemctl reload caddy
    ```
 
 3. **Automated Script Mis-Behaving:**
@@ -614,10 +614,11 @@ LOG_LEVEL=info
 LOG_LEVEL=debug
 ```
 
-### Nginx Caching
+### Caddy Compression and Caching
 
-Already configured in nginx config (see [DEPLOYMENT.md](DEPLOYMENT.md)), but ensure:
-- Static assets cached for 30 days
+Already configured in Caddyfile (see [DEPLOYMENT.md](DEPLOYMENT.md)), but ensure:
+- Static assets cached with Cache-Control headers
+- Responses compressed with gzip/zstd
 - API responses not cached
 
 ---
@@ -720,7 +721,7 @@ sudo journalctl -u termfleet -f
 - Review access logs for suspicious activity
 - Update system packages: `sudo apt update && sudo apt upgrade`
 - Verify SSL certificate is valid and auto-renewing
-- Check Nginx security headers
+- Check Caddy security headers
 - Review firewall rules
 
 **2. Capacity Planning (30 minutes)**

@@ -29,7 +29,7 @@ Termfleet is a centralized management system for monitoring and accessing ttyd-b
          ▼                                        └───────────┼──────────┘
 ┌────────────────────┐                                       │ POST /register
 │                    │                                       │ (on boot)
-│   Nginx Reverse    │                                       │
+│   Caddy Reverse    │                                       │
 │   Proxy            │                   ┌───────────────────▼────────────┐
 │   (Port 80/443)    │                   │   WORKSTATION #2               │
 │                    │                   │  ┌─────────────────┐           │
@@ -129,20 +129,20 @@ Boot → Registration Service Starts → Sends POST to Termfleet
      → ttyd detected → Status: online
 ```
 
-### 2. Nginx Reverse Proxy
+### 2. Caddy Reverse Proxy
 
 **Purpose:** SSL termination, HTTPS, routing
 
 **Configuration:**
-- Listens: Port 80 (redirect to HTTPS), Port 443 (HTTPS)
-- SSL/TLS: Let's Encrypt certificates
+- Listens: Port 80 (auto-redirect to HTTPS), Port 443 (HTTPS)
+- SSL/TLS: Automatic Let's Encrypt certificates
 - Proxies: All requests to `http://localhost:3000` (Node.js)
-- Security Headers: HSTS, X-Frame-Options, CSP
-- Static Asset Caching: 30 days for JS/CSS/images
+- Security Headers: Automatic secure defaults
+- Static Asset Caching: Configured via Caddyfile
 
 **Benefits:**
-- SSL/TLS offloading
-- Security hardening
+- Automatic HTTPS with zero configuration
+- Simple Caddyfile configuration
 - Better performance for static assets
 - Professional HTTPS setup
 
@@ -150,7 +150,7 @@ Boot → Registration Service Starts → Sends POST to Termfleet
 
 #### 3.1 HTTP Layer
 
-**Port:** 3000 (localhost only, behind Nginx)
+**Port:** 3000 (localhost only, behind Caddy)
 
 **Middleware:**
 - `express.json()` - Parse JSON bodies
@@ -607,8 +607,8 @@ Timing Rules:
 ### Network Security
 
 **Firewall Rules:**
-- Inbound: Only 80, 443 open (Nginx)
-- Nginx → Node.js: localhost only
+- Inbound: Only 80, 443 open (Caddy)
+- Caddy → Node.js: localhost only
 - Node.js → Workstations: Port 7681 outbound
 - Node.js → Spaceship: Port 443 outbound
 
@@ -618,10 +618,10 @@ Timing Rules:
 - Strong cipher suites
 
 **Headers:**
-- HSTS: `max-age=31536000`
+- Security headers: Automatic via Caddy
+- HSTS: Enabled by default
 - X-Frame-Options: `SAMEORIGIN`
 - X-Content-Type-Options: `nosniff`
-- X-XSS-Protection: `1; mode=block`
 
 ### Database Security
 
@@ -681,7 +681,7 @@ Timing Rules:
 | Logging | Winston | Flexible, file rotation, JSON format |
 | DNS | Spaceship.com API | Simple REST API, good docs |
 | Process Mgmt | systemd | Native, reliable, logs to journald |
-| Reverse Proxy | Nginx | Industry standard, fast, secure |
+| Reverse Proxy | Caddy | Automatic HTTPS, simple config |
 
 ---
 

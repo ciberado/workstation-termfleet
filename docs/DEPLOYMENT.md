@@ -37,8 +37,7 @@
 
 ### Optional but Recommended
 
-- **Nginx**: For reverse proxy
-- **Certbot**: For Let's Encrypt SSL certificates
+- **Caddy**: For reverse proxy with automatic HTTPS
 - **logrotate**: For additional log management (if system-managed)
 
 ---
@@ -64,7 +63,7 @@ For 20-25 concurrent workstations:
 ### Firewall Requirements
 
 **Inbound:**
-- Port 80 (HTTP) - For Let's Encrypt validation
+- Port 80 (HTTP) - For Let's Encrypt validation and auto-redirect
 - Port 443 (HTTPS) - For web access
 - Port 22 (SSH) - For management (restrict to admin IPs)
 
@@ -443,170 +442,133 @@ pm2 describe termfleet
 
 ## Reverse Proxy Setup
 
-### Nginx Configuration
+### Caddy Configuration
 
-#### 1. Install Nginx
+#### 1. Install Caddy
 
 ```bash
+# Install Caddy (official method)
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
 sudo apt update
-sudo apt install nginx
+sudo apt install caddy
 ```
 
-#### 2. Create Site Configuration
+#### 2. Create Caddyfile
 
 ```bash
-sudo nano /etc/nginx/sites-available/termfleet
+sudo nano /etc/caddy/Caddyfile
 ```
 
 **Configuration:**
-```nginx
-# Upstream Node.js server
-upstream termfleet_backend {
-    server 127.0.0.1:3000;
-    keepalive 64;
-}
-
-# Redirect HTTP to HTTPS
-server {
-    listen 80;
-    listen [::]:80;
-    server_name termfleet.yourdomain.com;
-
-    # Let's Encrypt challenge
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-
-    # Redirect all other traffic to HTTPS
-    location / {
-        return 301 https://$server_name$request_uri;
-    }
-}
-
-# HTTPS server
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name termfleet.yourdomain.com;
-
-    # SSL certificates (Let's Encrypt)
-    ssl_certificate /etc/letsencrypt/live/termfleet.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/termfleet.yourdomain.com/privkey.pem;
+```caddyfile
+# Termfleet reverse proxy with automatic HTTPS
+termfleet.yourdomain.com {
+    # Reverse proxy to Node.js
+    reverse_proxy localhost:3000
     
-    # SSL configuration
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384';
-    ssl_prefer_server_ciphers on;
-    ssl_session_cache shared:SSL:10m;
-    ssl_session_timeout 10m;
-
     # Security headers
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        -Server
+    }
+    
     # Logging
-    access_log /var/log/nginx/termfleet-access.log;
-    error_log /var/log/nginx/termfleet-error.log;
-
-    # Max upload size
-    client_max_body_size 10M;
-
-    # Proxy to Node.js
-    location / {
-        proxy_pass http://termfleet_backend;
-        proxy_http_version 1.1;
-        
-        # Headers
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-        
-        # Disable cache for API
-        proxy_cache_bypass $http_upgrade;
+    log {
+        output file /var/log/caddy/termfleet.log {
+            roll_size 100mb
+            roll_keep 5
+        }
     }
-
+    
+    # Encode responses (gzip/zstd)
+    encode gzip zstd
+    
     # Cache static assets
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        proxy_pass http://termfleet_backend;
-        proxy_cache_valid 200 30d;
-        add_header Cache-Control "public, immutable";
+    @static {
+        path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot
     }
+    header @static Cache-Control "public, max-age=2592000, immutable"
 }
 ```
 
-#### 3. Enable Site
+**Alternative minimal configuration:**
+```caddyfile
+# Simplest possible configuration - Caddy handles everything automatically
+termfleet.yourdomain.com {
+    reverse_proxy localhost:3000
+}
+```
+
+#### 3. Enable and Start Caddy
 
 ```bash
-# Create symbolic link
-sudo ln -s /etc/nginx/sites-available/termfleet /etc/nginx/sites-enabled/
+# Reload Caddy configuration
+sudo systemctl reload caddy
 
-# Test configuration
-sudo nginx -t
+# Or restart if first time
+sudo systemctl restart caddy
 
-# Reload Nginx
-sudo systemctl reload nginx
+# Check status
+sudo systemctl status caddy
+
+# View logs
+sudo journalctl -u caddy -f
 ```
 
 ---
 
 ## SSL/TLS Configuration
 
-### Let's Encrypt with Certbot
+### Automatic HTTPS with Caddy
 
-#### 1. Install Certbot
+**Caddy handles SSL/TLS automatically!** No manual certificate management needed.
+
+#### How It Works
+
+1. **Automatic Certificate Issuance**
+   - Caddy automatically obtains Let's Encrypt certificates
+   - Happens on first request to your domain
+   - No configuration required
+
+2. **Automatic Renewal**
+   - Caddy renews certificates automatically before expiration
+   - No cron jobs or scripts needed
+   - Happens in the background
+
+3. **HTTP to HTTPS Redirect**
+   - Automatic redirect from port 80 to 443
+   - Built into Caddy by default
+
+#### Requirements
+
+- Domain must point to server's public IP
+- Ports 80 and 443 must be open
+- Server must be reachable from internet
+
+#### Verify HTTPS
 
 ```bash
-sudo apt install certbot python3-certbot-nginx
+# Check certificate
+curl -vI https://termfleet.yourdomain.com/
+
+# View Caddy logs for certificate issuance
+sudo journalctl -u caddy | grep -i certificate
 ```
 
-#### 2. Obtain Certificate
+#### Manual Certificate Management (if needed)
+
+Caddy stores certificates in `/var/lib/caddy/.local/share/caddy/certificates/`
 
 ```bash
-# Stop Nginx temporarily
-sudo systemctl stop nginx
+# List certificates
+sudo ls -la /var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/
 
-# Get certificate
-sudo certbot certonly --standalone \
-  -d termfleet.yourdomain.com \
-  --email your-email@example.com \
-  --agree-tos \
-  --no-eff-email
-
-# Start Nginx
-sudo systemctl start nginx
-```
-
-#### 3. Auto-Renewal
-
-```bash
-# Test renewal
-sudo certbot renew --dry-run
-
-# Certbot auto-renewal is enabled by default via systemd timer
-sudo systemctl status certbot.timer
-```
-
-#### 4. Renewal Hook (Optional)
-
-Create `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh`:
-
-```bash
-#!/bin/bash
-systemctl reload nginx
-```
-
-```bash
-sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+# Force certificate renewal (rarely needed)
+sudo caddy reload --force
 ```
 
 ---
@@ -948,7 +910,7 @@ sqlite3 /opt/termfleet/data/termfleet.db "VACUUM;"
 - [ ] Database file has appropriate permissions (not world-readable)
 - [ ] Nginx reverse proxy configured
 - [ ] HTTPS enabled with valid certificate
-- [ ] Security headers configured in Nginx
+- [ ] Security headers configured in Caddyfile
 - [ ] Rate limiting enabled (`MAX_REQUESTS_PER_MINUTE`)
 - [ ] CORS origin restricted (`CORS_ORIGIN` set to specific domain)
 - [ ] Firewall configured to allow only necessary ports
@@ -977,7 +939,7 @@ sqlite3 /opt/termfleet/data/termfleet.db "VACUUM;"
 - [ ] Application built (`npm run build`)
 - [ ] Database initialized
 - [ ] systemd service created and enabled
-- [ ] Nginx configured and tested
+- [ ] Caddy configured and tested
 - [ ] Service started successfully
 
 ### Post-Deployment
