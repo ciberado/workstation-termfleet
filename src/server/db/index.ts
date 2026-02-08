@@ -9,7 +9,6 @@ import {
   Workstation,
   WorkstationStatus,
   WorkstationEvent,
-  WorkstationEventType,
 } from '../../shared/types.js';
 
 const __filename = fileURLToPath(import.meta.url);

@@ -2,7 +2,7 @@ import { getAllWorkstations, updateWorkstation, deleteWorkstation, createEvent }
 import { applyStateMachine, shouldRemoveWorkstation } from '../services/stateMachine.js';
 import { logger } from '../logger.js';
 import { config } from '../config.js';
-import { WorkstationEventType, WorkstationStatus } from '../../shared/types.js';
+import { WorkstationEventType } from '../../shared/types.js';
 
 /**
  * Perform health check on a single workstation

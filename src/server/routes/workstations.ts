@@ -137,7 +137,7 @@ router.post(
       return sendSuccess(res, response, 201);
     } catch (error) {
       // DNS registration failed - still create workstation with dns_failed status
-      const workstation = createWorkstation({
+      createWorkstation({
         name,
         ip_address: ip,
         domain_name: `${name}.${config.baseDomain}`,

@@ -2,7 +2,7 @@ import { Card, Badge, Text, Button, Group, Stack } from '@mantine/core';
 import { IconExternalLink } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Workstation, WorkstationStatus } from '../../../shared/types';
+import { Workstation, WorkstationStatus } from '@/shared/types';
 
 dayjs.extend(relativeTime);
 

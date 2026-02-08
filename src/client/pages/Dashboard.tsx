@@ -13,7 +13,7 @@ import {
 import { IconAlertCircle } from '@tabler/icons-react';
 import { WorkstationCard } from '../components/WorkstationCard';
 import { fetchWorkstations } from '../services/api';
-import { Workstation, WorkstationStatus } from '../../../shared/types';
+import { Workstation, WorkstationStatus } from '@/shared/types';
 
 function Dashboard() {
   const [workstations, setWorkstations] = useState<Workstation[]>([]);

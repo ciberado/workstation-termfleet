@@ -6,7 +6,7 @@ const router = Router();
 /**
  * Health check endpoint
  */
-router.get('/health', (req, res) => {
+router.get('/health', (_req, res) => {
   sendSuccess(res, {
     status: 'ok',
     timestamp: new Date().toISOString(),

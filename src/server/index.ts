@@ -6,6 +6,7 @@ import { requestId } from './middleware/requestId.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { rateLimiter } from './middleware/rateLimit.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { serveStatic } from './middleware/serveStatic.js';
 import routes from './routes/index.js';
 import { startHealthCheckScheduler } from './jobs/scheduler.js';
 
@@ -30,6 +31,9 @@ export function createApp(): Express {
 
   // Mount API routes
   app.use('/api', routes);
+
+  // Serve static frontend files (must be after API routes)
+  serveStatic(app);
 
   // Error handling (must be last)
   app.use(errorHandler);

@@ -1,4 +1,4 @@
-import { Workstation, WorkstationStatus, ApiResponse } from '../../shared/types.js';
+import { Workstation, WorkstationStatus, ApiResponse } from '@/shared/types.js';
 
 const API_BASE = '/api';
 

@@ -27,8 +27,8 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   {
     from: WorkstationStatus.STARTING,
     to: WorkstationStatus.ONLINE,
-    condition: (ws, healthCheckSuccess) => healthCheckSuccess,
-    updateFields: (ws) => ({
+    condition: (_ws, healthCheckSuccess) => healthCheckSuccess,
+    updateFields: (_ws) => ({
       status: WorkstationStatus.ONLINE,
       last_check: new Date().toISOString(),
       state_changed_at: new Date().toISOString(),
@@ -45,7 +45,7 @@ export const STATE_TRANSITIONS: StateTransition[] = [
       const startedDiff = timeDiff(ws.started_at);
       return startedDiff !== null && startedDiff > 10 * 60 * 1000; // 10 minutes
     },
-    updateFields: (ws) => ({
+    updateFields: (_ws) => ({
       status: WorkstationStatus.UNKNOWN,
       state_changed_at: new Date().toISOString(),
       unknown_since: new Date().toISOString(),
@@ -56,8 +56,8 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   {
     from: WorkstationStatus.ONLINE,
     to: WorkstationStatus.ONLINE,
-    condition: (ws, healthCheckSuccess) => healthCheckSuccess,
-    updateFields: (ws) => ({
+    condition: (_ws, healthCheckSuccess) => healthCheckSuccess,
+    updateFields: (_ws) => ({
       last_check: new Date().toISOString(),
     }),
   },
@@ -71,7 +71,7 @@ export const STATE_TRANSITIONS: StateTransition[] = [
       const lastCheckDiff = timeDiff(ws.last_check);
       return lastCheckDiff !== null && lastCheckDiff > 1 * 60 * 1000; // 1 minute
     },
-    updateFields: (ws) => ({
+    updateFields: (_ws) => ({
       status: WorkstationStatus.UNKNOWN,
       state_changed_at: new Date().toISOString(),
       unknown_since: new Date().toISOString(),
@@ -82,8 +82,8 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   {
     from: WorkstationStatus.UNKNOWN,
     to: WorkstationStatus.ONLINE,
-    condition: (ws, healthCheckSuccess) => healthCheckSuccess,
-    updateFields: (ws) => ({
+    condition: (_ws, healthCheckSuccess) => healthCheckSuccess,
+    updateFields: (_ws) => ({
       status: WorkstationStatus.ONLINE,
       last_check: new Date().toISOString(),
       state_changed_at: new Date().toISOString(),
@@ -100,7 +100,7 @@ export const STATE_TRANSITIONS: StateTransition[] = [
       const unknownDiff = timeDiff(ws.unknown_since);
       return unknownDiff !== null && unknownDiff > 10 * 60 * 1000; // 10 minutes
     },
-    updateFields: (ws) => ({
+    updateFields: (_ws) => ({
       status: WorkstationStatus.TERMINATED,
       state_changed_at: new Date().toISOString(),
       terminated_at: new Date().toISOString(),

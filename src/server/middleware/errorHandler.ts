@@ -5,7 +5,7 @@ import { ErrorCode } from '../../shared/types.js';
 /**
  * Global error handling middleware
  */
-export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction): void {
+export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction): void {
   logger.error('Unhandled error', {
     error: err.message,
     stack: err.stack,
