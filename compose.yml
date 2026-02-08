@@ -1,0 +1,22 @@
+services:
+  termfleet:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: termfleet
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${TERMFLEET_PORT:-3000}:${TERMFLEET_PORT:-3000}"
+    volumes:
+      # Persist SQLite database
+      - ./data:/app/data
+      # Persist logs
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:${TERMFLEET_PORT:-3000}/health', (r) => { if (r.statusCode !== 200) throw new Error('Health check failed'); })"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3

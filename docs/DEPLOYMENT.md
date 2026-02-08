@@ -5,22 +5,268 @@
 
 ## Table of Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Server Requirements](#server-requirements)
-3. [Installation Steps](#installation-steps)
-4. [Configuration](#configuration)
-5. [Database Setup](#database-setup)
-6. [Building for Production](#building-for-production)
-7. [Process Management](#process-management)
-8. [Reverse Proxy Setup](#reverse-proxy-setup)
-9. [SSL/TLS Configuration](#ssltls-configuration)
-10. [Monitoring](#monitoring)
-11. [Backup Strategy](#backup-strategy)
-12. [Updates & Maintenance](#updates--maintenance)
+1. [Deployment Options](#deployment-options)
+2. [Docker Deployment (Recommended)](#docker-deployment-recommended)
+3. [Traditional Deployment](#traditional-deployment)
+   - [Prerequisites](#prerequisites)
+   - [Server Requirements](#server-requirements)
+   - [Installation Steps](#installation-steps)
+   - [Configuration](#configuration)
+   - [Database Setup](#database-setup)
+   - [Building for Production](#building-for-production)
+   - [Process Management](#process-management)
+4. [Reverse Proxy Setup](#reverse-proxy-setup)
+5. [SSL/TLS Configuration](#ssltls-configuration)
+6. [Monitoring](#monitoring)
+7. [Backup Strategy](#backup-strategy)
+8. [Updates & Maintenance](#updates--maintenance)
 
 ---
 
-## Prerequisites
+## Deployment Options
+
+Termfleet supports two deployment methods:
+
+1. **Docker Deployment (Recommended)** - Containerized deployment with Docker Compose
+   - ✅ Fastest setup (5 minutes)
+   - ✅ Consistent environment
+   - ✅ Easy updates and rollbacks
+   - ✅ Isolated dependencies
+   - ⚠️ Requires Docker installation
+
+2. **Traditional Deployment** - Direct Node.js deployment
+   - ✅ Full control over environment
+   - ✅ No Docker overhead
+   - ⚠️ More manual setup steps
+   - ⚠️ Requires Node.js management
+
+**Recommendation:** Use Docker deployment for production unless you have specific requirements for traditional deployment.
+
+---
+
+## Docker Deployment (Recommended)
+
+### Prerequisites
+
+- Linux server (Ubuntu 22.04+, Debian 11+, or RHEL 8+)
+- Docker Engine 24.0 or higher
+- Docker Compose 2.20 or higher
+- 2GB RAM, 2 vCPU, 10GB disk
+- Domain configured in Spaceship.com
+- Spaceship.com API credentials
+
+### 1. Install Docker
+
+If Docker is not already installed:
+
+```bash
+# Ubuntu/Debian
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Verify installation
+docker --version
+docker compose version
+```
+
+### 2. Clone Repository
+
+```bash
+# Create directory
+mkdir -p /opt/termfleet
+cd /opt/termfleet
+
+# Clone repository
+git clone https://github.com/your-org/termfleet.git .
+
+# Or download specific release
+git fetch --tags
+git checkout v2.1.1
+```
+
+### 3. Configure Environment
+
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit configuration
+nano .env
+```
+
+**Required environment variables:**
+
+```env
+# Server Configuration
+TERMFLEET_PORT=3000
+NODE_ENV=production
+
+# Domain Configuration
+TERMFLEET_BASE_DOMAIN=ws.aprender.cloud
+
+# Spaceship.com API Credentials (REQUIRED)
+TERMFLEET_SPACESHIP_API_KEY=your_actual_api_key_here
+TERMFLEET_SPACESHIP_API_SECRET=your_actual_api_secret_here
+
+# Health Check Configuration
+TERMFLEET_WORKSTATION_CHECK_INTERVAL=20000
+TERMFLEET_HEALTH_CHECK_TIMEOUT=10000
+
+# Logging Configuration
+TERMFLEET_LOG_LEVEL=info
+TERMFLEET_LOG_DIR=/app/logs
+
+# Database Configuration
+TERMFLEET_DB_PATH=/app/data/termfleet.db
+
+# Rate Limiting Configuration
+TERMFLEET_RATE_LIMIT_WINDOW=900000
+TERMFLEET_RATE_LIMIT_MAX_REQUESTS=100
+
+# DNS Configuration
+TERMFLEET_DNS_TTL=600
+```
+
+### 4. Create Data Directories
+
+```bash
+# Create directories for persistence
+mkdir -p data logs
+
+# Set permissions (important for container)
+chmod 755 data logs
+```
+
+### 5. Build and Start
+
+```bash
+# Build and start in detached mode
+docker compose up -d --build
+
+# View logs
+docker compose logs -f
+
+# Check status
+docker compose ps
+```
+
+### 6. Verify Deployment
+
+```bash
+# Check health endpoint
+curl http://localhost:3000/health
+
+# Expected response:
+# {"status":"healthy","timestamp":"2026-02-08T12:34:56.789Z","uptime":123}
+
+# Check container logs
+docker compose logs termfleet --tail=50
+
+# Check container health
+docker inspect termfleet | grep -A 5 "Health"
+```
+
+### 7. Docker Management Commands
+
+```bash
+# View logs
+docker compose logs -f termfleet
+
+# Restart service
+docker compose restart
+
+# Stop service
+docker compose stop
+
+# Start service
+docker compose start
+
+# Rebuild after code changes
+docker compose up -d --build
+
+# View resource usage
+docker stats termfleet
+
+# Execute commands in container
+docker compose exec termfleet sh
+
+# Update to new version
+git pull
+docker compose up -d --build
+```
+
+### 8. Setup Caddy Reverse Proxy
+
+Create `/etc/caddy/Caddyfile`:
+
+```caddy
+termfleet.yourdomain.com {
+    reverse_proxy localhost:3000
+}
+```
+
+Restart Caddy:
+
+```bash
+sudo systemctl reload caddy
+```
+
+### Docker Deployment Advantages
+
+✅ **Isolated Environment** - No conflicts with system packages  
+✅ **Consistent Builds** - Same environment everywhere  
+✅ **Easy Updates** - `docker compose up -d --build`  
+✅ **Rollback Support** - Keep previous images  
+✅ **Resource Limits** - Can set memory/CPU limits  
+✅ **Health Checks** - Built-in container health monitoring  
+✅ **Log Management** - Centralized Docker logging  
+
+### Docker Troubleshooting
+
+**Container won't start:**
+```bash
+# Check logs for errors
+docker compose logs termfleet
+
+# Check if port is already in use
+sudo netstat -tulpn | grep 3000
+
+# Recreate container
+docker compose down
+docker compose up -d --build
+```
+
+**Permission errors:**
+```bash
+# Fix data directory permissions
+sudo chown -R 1000:1000 data logs
+chmod 755 data logs
+```
+
+**Database locked errors:**
+```bash
+# Stop container
+docker compose down
+
+# Check for stale lock files
+ls -la data/
+
+# Remove lock files if present
+rm data/*.db-shm data/*.db-wal
+
+# Restart
+docker compose up -d
+```
+
+---
+
+## Traditional Deployment
+
+For users who prefer traditional Node.js deployment without Docker.
+
+### Prerequisites
 
 ### Required Software
 

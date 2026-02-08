@@ -63,10 +63,53 @@ STARTING → ONLINE ─────────┐
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- **Option 1 (Docker):** Docker Engine 24.0+ and Docker Compose 2.20+
+- **Option 2 (Traditional):** Node.js 18+ and npm
 - Spaceship.com account with API credentials
 
-### Installation
+### Option 1: Docker Deployment (Recommended)
+
+1. **Clone Repository**
+   ```bash
+   git clone <repository-url>
+   cd termfleet
+   ```
+
+2. **Configure Environment**
+   ```bash
+   cp .env.example .env
+   nano .env
+   ```
+
+   Update required variables:
+   ```env
+   # Required
+   TERMFLEET_SPACESHIP_API_KEY=your_api_key_here
+   TERMFLEET_SPACESHIP_API_SECRET=your_api_secret_here
+   TERMFLEET_BASE_DOMAIN=ws.aprender.cloud
+   
+   # Optional - defaults provided
+   TERMFLEET_PORT=3000
+   NODE_ENV=production
+   ```
+
+3. **Start with Docker Compose**
+   ```bash
+   # Build and start
+   docker compose up -d --build
+   
+   # View logs
+   docker compose logs -f
+   
+   # Check status
+   docker compose ps
+   ```
+
+4. **Access Dashboard**
+   
+   Open http://localhost:3000 in your browser
+
+### Option 2: Traditional Installation
 
 1. **Clone and Install**
    ```bash
