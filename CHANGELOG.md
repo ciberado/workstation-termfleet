@@ -160,7 +160,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Troubleshooting section
   - Contributing guidelines
 - Updated PLAN.md with 91 completed checkboxes across phases 0-6
-- All phases marked complete with acceptance criteria met
+
+#### Phase 7: Logging & Monitoring Review
+- Security audit documentation (LOGGING_REVIEW.md):
+  - Analysis of all logging statements for sensitive data
+  - Review of 15+ log locations across database, API, health checks, DNS
+  - Confirmed no passwords, API keys, or tokens in logs
+  - Identified safe logging practices (IP addresses, workstation names, status codes)
+  - Recommendations for production monitoring
+  - Log retention and security guidelines
+
+#### Phase 8: Testing Infrastructure
+- Jest 29.x test framework with TypeScript support
+  - ESM configuration with NODE_OPTIONS=--experimental-vm-modules
+  - ts-jest preset for TypeScript compilation
+  - @testing-library/react for component testing
+  - 305 packages installed for comprehensive test coverage
+- Unit test suites (39 tests total, all passing):
+  - validation.test.ts (9 tests): workstation name, IPv4 format, DNS validation
+  - stateMachine.test.ts (10 tests): all 6 state transitions with timing logic
+  - apiResponse.test.ts (5 tests): success/error response formatting
+- Test infrastructure:
+  - Jest config in package.json with ESM support
+  - Test scripts: npm test, npm run test:watch, npm run test:coverage
+  - TypeScript path alias resolution in tests
+  - Proper .js extension imports for ESM compatibility
+- Manual test plan (TEST_PLAN.md):
+  - Setup and prerequisites
+  - 9 detailed test scenarios with expected results
+  - Integration testing procedures
+  - Performance testing guidelines
+  - Security testing checklist
+
+#### Phase 9: Documentation & Polish
+- Production deployment guide (DEPLOYMENT.md, 1000+ lines):
+  - Prerequisites and system requirements
+  - Caddy reverse proxy setup with automatic HTTPS
+  - Minimal 3-line Caddyfile configuration
+  - Let's Encrypt integration for SSL certificates
+  - SQLite database optimization (WAL mode, PRAGMA settings)
+  - Systemd service configuration for auto-start
+  - Environment variable reference
+  - Backup and restore procedures
+  - Monitoring setup with health checks
+  - Rollback procedures for failed deployments
+  - Security hardening checklist
+- Operations manual (OPERATIONS.md, 700+ lines):
+  - Daily health check procedures
+  - Log monitoring and analysis
+  - Common operational tasks
+  - Incident response workflows
+  - Troubleshooting guides for DNS, health checks, database issues
+  - Performance optimization tips
+  - Capacity planning guidelines
+  - Maintenance windows and update procedures
+- Architecture documentation (ARCHITECTURE.md, 900+ lines):
+  - High-level system architecture diagram
+  - Component breakdown (frontend, backend, database, external services)
+  - Request/response flow diagrams (ASCII art)
+  - State machine visualization with all 6 transitions
+  - Data flow analysis
+  - Security architecture
+  - Deployment architecture with Caddy
+  - Scalability considerations
+  - Technology stack rationale
+- Updated PLAN.md marking phases 7-9 complete
 
 ### Fixed
 - TypeScript linter errors with unused imports/variables
@@ -168,12 +232,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multiple typos in variable names and function names
 - Import consistency across client components
 - Build errors preventing production compilation
+- Jest test failures: validation return type assertions
+  - Changed validateWorkstationName checks to use .valid property
+  - Fixed validateIpv4 function name (was validateIPv4Address)
+  - Corrected ErrorCode enum values (INVALID_INPUT)
+- Jest test failures: API response format mismatches
+  - Changed 'errorCode' field to 'code' to match actual implementation
+  - Added 'details: undefined' to error response assertions
+  - Fixed all 39 tests to match actual API response structure
+- State machine test assertions: workstation ID type (string not number)
 
 ### Changed
 - State machine uses underscore-prefixed parameters for unused variables
 - Middleware functions follow ESLint no-unused-vars rules
 - All imports normalized to use path aliases
 - CHANGELOG updated to reflect actual implementation
+- **Switched from Nginx to Caddy for reverse proxy** (simpler config, automatic HTTPS)
+  - Updated all documentation to use Caddy instead of Nginx
+  - DEPLOYMENT.md now features 3-line Caddyfile with automatic Let's Encrypt
+  - OPERATIONS.md updated with Caddy troubleshooting commands
+  - ARCHITECTURE.md diagrams updated to show Caddy layer
+- Test configuration updated to ESM with experimental VM modules
 
 ### Technical Details
 - Node.js ES modules throughout
@@ -184,15 +263,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - React hooks for state management
 - Mantine v7 UI components
 - Better-sqlite3 synchronous API (no async/await needed)
+- Jest 29.x with ESM support (experimental VM modules)
+- Test coverage: 39 tests across 3 suites (validation, state machine, API responses)
+- Caddy reverse proxy with automatic HTTPS via Let's Encrypt
 - 20-second health check interval
 - 10-second health check timeout per workstation
 - 600-second DNS TTL
 - Base domain: ws.aprender.cloud
 
 ### Repository Statistics
-- Total commits: 7
-- Lines of code: ~2,000 (TypeScript/TSX)
-- Files created: 35+
+- Total commits: 14+
+- Lines of code: ~4,000+ (TypeScript/TSX)
+- Lines of documentation: ~3,500+ (Markdown)
+- Files created: 50+
+- Test files: 3 test suites with 39 passing tests
 - Git history:
   1. Initial project setup with comprehensive specification
   2. Add comprehensive implementation plan with 10 phases
@@ -202,15 +286,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   6. Add comprehensive README documentation
   7. Fix TypeScript linter errors - use consistent path aliases
   8. Update PLAN.md to reflect completed phases 0-6
+  9. Phase 7: Logging security review (LOGGING_REVIEW.md)
+  10. Phase 8: Testing infrastructure (Jest, test files, TEST_PLAN.md)
+  11. Phase 9: Documentation polish (DEPLOYMENT.md, OPERATIONS.md, ARCHITECTURE.md)
+  12. Switch from Nginx to Caddy for simpler deployment
+  13. Fix TypeScript linter errors in test files
+  14. Fix test assertion failures - all 39 tests passing
 
 ### Project Status
 - ✅ Phases 0-6 complete and production-ready
+- ✅ Phase 7: Logging & monitoring review complete
+- ✅ Phase 8: Testing infrastructure complete (39/39 tests passing)
+- ✅ Phase 9: Documentation & polish complete (Caddy-based deployment)
 - ✅ Successfully builds without errors
 - ✅ All TypeScript/ESLint checks passing
-- ⏳ Phases 7-10 pending (Testing, Logging review, Documentation polish, Deployment)
+- ✅ All Jest tests passing (100% success rate)
+- ⏳ Phase 10 pending: Production deployment (requires infrastructure)
 
 ### Next Steps
-- Phase 7: Review logging implementation
-- Phase 8: Add comprehensive test suite (Jest + React Testing Library)
-- Phase 9: Polish documentation and add deployment guides
-- Phase 10: Production deployment with Docker/systemd
+- Phase 10: Production deployment with Caddy reverse proxy
+  - Deploy to production server infrastructure
+  - Configure Caddy with automatic HTTPS
+  - Setup systemd services for auto-start
+  - Implement monitoring and alerting
+  - 24-hour soak testing with real workstations
+  - Load testing with 20-25 concurrent workstations
+  - Performance optimization based on metrics
