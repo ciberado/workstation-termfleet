@@ -30,9 +30,9 @@ COPY --from=builder /app/dist ./dist
 # Copy necessary files
 COPY --from=builder /app/src/server/db/schema.sql ./src/server/db/schema.sql
 
-# Create directories for data and logs
+# Create directories for data and logs with correct ownership
 RUN mkdir -p /app/data /app/logs && \
-    chown -R node:node /app
+    chown node:node /app/data /app/logs
 
 # Switch to non-root user
 USER node

@@ -272,6 +272,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added 'details: undefined' to error response assertions
   - Fixed all 39 tests to match actual API response structure
 - State machine test assertions: workstation ID type (string not number)
+- Dockerfile slow build: chown performance issue
+  - Changed from `chown -R node:node /app` (thousands of files)
+  - To `chown node:node /app/data /app/logs` (only 2 directories)
+  - Build time reduced from 200+ seconds to <1 second for this step
 
 ### Changed
 - State machine uses underscore-prefixed parameters for unused variables
