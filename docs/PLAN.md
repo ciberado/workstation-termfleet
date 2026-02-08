@@ -22,11 +22,11 @@ This document outlines a phased approach to implementing Termfleet and the Works
 - [x] Git repository initialized with main branch
 - [x] Comprehensive specification document
 - [x] Initial CHANGELOG.md
-- [ ] .env.example with all required variables and defaults
-- [ ] tsconfig.json, vite.config.ts, package.json all properly configured
-- [ ] .eslintrc, .prettierrc for code formatting
-- [ ] .gitignore updated for Node/TypeScript/SQLite/logs
-- [ ] Directory structure created:
+- [x] .env.example with all required variables and defaults
+- [x] tsconfig.json, vite.config.ts, package.json all properly configured
+- [x] .eslintrc, .prettierrc for code formatting
+- [x] .gitignore updated for Node/TypeScript/SQLite/logs
+- [x] Directory structure created:
   - `src/server/` - Express backend
   - `src/client/` - React frontend
   - `src/shared/` - Shared types/constants
@@ -35,9 +35,9 @@ This document outlines a phased approach to implementing Termfleet and the Works
   - `data/` - SQLite database (gitignored)
 
 #### Workstation Setup
-- [ ] Review existing workstation code structure
-- [ ] Plan bootstrap service integration point
-- [ ] Document how userdata.sh will be modified
+- [x] Review existing workstation code structure
+- [x] Plan bootstrap service integration point
+- [x] Document how userdata.sh will be modified
 
 ### Tasks
 
@@ -54,10 +54,10 @@ This document outlines a phased approach to implementing Termfleet and the Works
 3. Document environment variable passing
 
 ### Acceptance Criteria
-- [ ] `npm install` succeeds
-- [ ] `npm run dev` starts both client and server
-- [ ] All directories exist
-- [ ] ESLint/Prettier configured and working
+- [x] `npm install` succeeds
+- [x] `npm run dev` starts both client and server
+- [x] All directories exist
+- [x] ESLint/Prettier configured and working
 
 ---
 
@@ -72,48 +72,48 @@ This document outlines a phased approach to implementing Termfleet and the Works
 ### Deliverables
 
 #### Database Layer
-- [ ] SQLite initialization module (`src/server/db/index.ts`)
+- [x] SQLite initialization module (`src/server/db/index.ts`)
   - Connect to database
   - Create tables if not exist
   - Migration/schema management
-- [ ] Database schema file (`src/server/db/schema.sql`)
+- [x] Database schema file (`src/server/db/schema.sql`)
   - workstations table
   - workstation_events table (optional)
   - Indexes for performance
-- [ ] Type definitions for database entities (`src/shared/types.ts`)
+- [x] Type definitions for database entities (`src/shared/types.ts`)
   - Workstation interface
   - WorkstationStatus enum
   - WorkstationEvent interface
 
 #### Express Server
-- [ ] Basic Express app setup (`src/server/index.ts`)
+- [x] Basic Express app setup (`src/server/index.ts`)
   - Port configuration
   - Middleware setup (cors, json, logging)
   - Error handling middleware
   - Request ID tracking
-- [ ] Environment configuration module (`src/server/config.ts`)
+- [x] Environment configuration module (`src/server/config.ts`)
   - Load .env variables
   - Validate required config
   - Provide typed config object
-- [ ] Request/response utilities (`src/server/utils/`)
+- [x] Request/response utilities (`src/server/utils/`)
   - standardResponse() helper for success responses
   - standardError() helper for error responses
   - AsyncHandler wrapper for route handlers
 
 #### Logging System
-- [ ] Winston logger configuration (`src/server/logger.ts`)
+- [x] Winston logger configuration (`src/server/logger.ts`)
   - Console transport (INFO level)
   - File transport (DEBUG level) with rotation
   - JSON format with timestamps
   - Request middleware for logging
-- [ ] Log directory setup with rotation
+- [x] Log directory setup with rotation
 
 #### API Structure
-- [ ] Base Router structure (`src/server/routes/index.ts`)
+- [x] Base Router structure (`src/server/routes/index.ts`)
   - Mount routes at `/api`
-- [ ] Health check endpoint (`/api/health`) for monitoring
+- [x] Health check endpoint (`/api/health`) for monitoring
   - Returns 200 OK with service status
-- [ ] Error handling middleware with standardized responses
+- [x] Error handling middleware with standardized responses
 
 ### Tasks
 
@@ -127,12 +127,12 @@ This document outlines a phased approach to implementing Termfleet and the Works
 8. Verify logging output to console and file
 
 ### Acceptance Criteria
-- [ ] `npm run dev:server` starts on port 3000
-- [ ] Database file created in `data/termfleet.db`
-- [ ] Health check endpoint responds with 200
-- [ ] All logs output to console and `logs/` directory
-- [ ] TypeScript compiles without errors
-- [ ] Request IDs tracked in logs
+- [x] `npm run dev:server` starts on port 3000
+- [x] Database file created in `data/termfleet.db`
+- [x] Health check endpoint responds with 200
+- [x] All logs output to console and `logs/` directory
+- [x] TypeScript compiles without errors
+- [x] Request IDs tracked in logs
 
 ---
 
@@ -147,14 +147,14 @@ This document outlines a phased approach to implementing Termfleet and the Works
 ### Deliverables
 
 #### Rate Limiting
-- [ ] Rate limit middleware (`src/server/middleware/rateLimit.ts`)
+- [x] Rate limit middleware (`src/server/middleware/rateLimit.ts`)
   - Per-IP bucket-based limiting
   - Configurable window and max requests
   - Returns 429 on limit exceeded
   - Log rate limit hits
 
 #### Workstation Registration
-- [ ] POST `/api/workstations/register` endpoint
+- [x] POST `/api/workstations/register` endpoint
   - Input validation (name, ip)
   - Check for existing workstation
   - Create or update in database
@@ -162,19 +162,19 @@ This document outlines a phased approach to implementing Termfleet and the Works
   - Handle DNS failures (set dns_failed status)
   - Return standardized response with domain info
   - Log all registration attempts
-- [ ] Input validation utilities (`src/server/utils/validation.ts`)
+- [x] Input validation utilities (`src/server/utils/validation.ts`)
   - Validate workstation name format
   - Validate IPv4 address
 
 #### Domain Propagation Check
-- [ ] GET `/api/workstations/:name/propagation` endpoint
+- [x] GET `/api/workstations/:name/propagation` endpoint
   - Query Spaceship API or perform DNS check
   - Return boolean propagation status
   - Handle failures gracefully
   - Log check attempts
 
 #### List Workstations
-- [ ] GET `/api/workstations` endpoint with query params
+- [x] GET `/api/workstations` endpoint with query params
   - Filter by status (query param)
   - Sort by field (query param)
   - Sort order ascending/descending
@@ -183,12 +183,12 @@ This document outlines a phased approach to implementing Termfleet and the Works
   - Log list requests
 
 #### Single Workstation
-- [ ] GET `/api/workstations/:name` endpoint
+- [x] GET `/api/workstations/:name` endpoint
   - Return single workstation details
   - Handle not found (404)
 
 #### Spaceship.com Integration
-- [ ] Spaceship service module (`src/server/services/spaceship.ts`)
+- [x] Spaceship service module (`src/server/services/spaceship.ts`)
   - Register/update DNS record
   - Check domain propagation
   - Error handling with descriptive messages
@@ -207,13 +207,13 @@ This document outlines a phased approach to implementing Termfleet and the Works
 9. Test all endpoints with Postman/curl
 
 ### Acceptance Criteria
-- [ ] All 5 endpoints implemented and responding
-- [ ] Rate limiting works (test with rapid requests)
-- [ ] Validation rejects invalid inputs
-- [ ] Spaceship integration connects successfully
-- [ ] Error responses follow standard format
-- [ ] All operations logged at DEBUG level
-- [ ] No unhandled promise rejections
+- [x] All 5 endpoints implemented and responding
+- [x] Rate limiting works (test with rapid requests)
+- [x] Validation rejects invalid inputs
+- [x] Spaceship integration connects successfully
+- [x] Error responses follow standard format
+- [x] All operations logged at DEBUG level
+- [x] No unhandled promise rejections
 
 ---
 
@@ -228,7 +228,7 @@ This document outlines a phased approach to implementing Termfleet and the Works
 ### Deliverables
 
 #### State Machine Implementation
-- [ ] State machine module (`src/server/services/stateMachine.ts`)
+- [x] State machine module (`src/server/services/stateMachine.ts`)
   - Enum for all states
   - Type-safe state transitions
   - Rules engine for transitions based on conditions
@@ -236,11 +236,11 @@ This document outlines a phased approach to implementing Termfleet and the Works
   - Event emission for state changes
 
 #### Health Check Job
-- [ ] Scheduler module (`src/server/jobs/scheduler.ts`)
+- [x] Scheduler module (`src/server/jobs/scheduler.ts`)
   - Initialize job at server startup
   - Run every 20 seconds (configurable)
   - Error handling prevents job from crashing
-- [ ] Health check worker (`src/server/jobs/healthCheck.ts`)
+- [x] Health check worker (`src/server/jobs/healthCheck.ts`)
   - Fetch all workstations from database
   - For each workstation, attempt HTTPS GET to root
   - 10-second timeout per request
@@ -250,13 +250,13 @@ This document outlines a phased approach to implementing Termfleet and the Works
   - Log all state transitions with debug info
 
 #### Health Check Logic Details
-- [ ] Handle starting → online (on 200 OK)
-- [ ] Handle starting → unknown (on 10 min timeout)
-- [ ] Handle online → unknown (on 1 min no response)
-- [ ] Handle unknown → online (on 200 OK response)
-- [ ] Handle unknown → terminated (on 10 min in unknown)
-- [ ] Handle terminated → removed (on 50 min in terminated)
-- [ ] Handle concurrent checks without race conditions
+- [x] Handle starting → online (on 200 OK)
+- [x] Handle starting → unknown (on 10 min timeout)
+- [x] Handle online → unknown (on 1 min no response)
+- [x] Handle unknown → online (on 200 OK response)
+- [x] Handle unknown → terminated (on 10 min in unknown)
+- [x] Handle terminated → removed (on 50 min in terminated)
+- [x] Handle concurrent checks without race conditions
 
 ### Tasks
 
@@ -270,14 +270,14 @@ This document outlines a phased approach to implementing Termfleet and the Works
 8. Verify job runs at correct interval
 
 ### Acceptance Criteria
-- [ ] Job starts automatically on server startup
-- [ ] Job runs every 20 seconds
-- [ ] Health checks happen in parallel (Promise.all)
-- [ ] State transitions apply correctly
-- [ ] Timestamps updated properly for each workstation
-- [ ] All state changes logged
-- [ ] Job doesn't crash on network failures
-- [ ] Starting workstations timeout after 10 minutes
+- [x] Job starts automatically on server startup
+- [x] Job runs every 20 seconds
+- [x] Health checks happen in parallel (Promise.all)
+- [x] State transitions apply correctly
+- [x] Timestamps updated properly for each workstation
+- [x] All state changes logged
+- [x] Job doesn't crash on network failures
+- [x] Starting workstations timeout after 10 minutes
 
 ---
 
@@ -292,14 +292,14 @@ This document outlines a phased approach to implementing Termfleet and the Works
 ### Deliverables
 
 #### React App Structure
-- [ ] Vite app configured for SPA
-- [ ] React Router setup (`src/client/main.tsx`)
+- [x] Vite app configured for SPA
+- [x] React Router setup (`src/client/main.tsx`)
   - Root route: /dashboard (main dashboard)
   - Other routes as needed
-- [ ] Mantine theming and setup
+- [x] Mantine theming and setup
 
 #### Dashboard Page
-- [ ] Dashboard component (`src/client/pages/Dashboard.tsx`)
+- [x] Dashboard component (`src/client/pages/Dashboard.tsx`)
   - Workstation cards grid layout
   - Status filters dropdown
   - Sort options (name, status, created, last_check)
@@ -307,7 +307,7 @@ This document outlines a phased approach to implementing Termfleet and the Works
   - Auto-refresh controls
 
 #### Workstation Card Component
-- [ ] Card component (`src/client/components/WorkstationCard.tsx`)
+- [x] Card component (`src/client/components/WorkstationCard.tsx`)
   - Display workstation name
   - Status badge (color-coded)
   - IP address
@@ -317,22 +317,22 @@ This document outlines a phased approach to implementing Termfleet and the Works
   - Responsive design
 
 #### API Integration
-- [ ] Fetch service (`src/client/services/api.ts`)
+- [x] Fetch service (`src/client/services/api.ts`)
   - GET `/api/workstations`
   - Handle errors gracefully
-- [ ] Polling logic
+- [x] Polling logic
   - Auto-refresh every 5 seconds
   - Show "Last updated" indicator
   - Loading state during fetch
 
 #### Styling & UX
-- [ ] Mantine components usage
+- [x] Mantine components usage
   - Grid for cards
   - Badges for status
   - Buttons for actions
   - Select dropdowns for filters
   - Relative time formatting
-- [ ] Status color mapping
+- [x] Status color mapping
   - online: green (#51cf66)
   - starting: yellow (#ffd43b)
   - unknown: red (#ff6b6b)
@@ -340,12 +340,12 @@ This document outlines a phased approach to implementing Termfleet and the Works
   - terminated: gray (#868e96)
 
 #### Features
-- [ ] Summary bar showing count by status
-- [ ] Empty state message
-- [ ] Loading indicator
-- [ ] Error state handling
-- [ ] Filter by status functionality
-- [ ] Sort options with persistence (localStorage)
+- [x] Summary bar showing count by status
+- [x] Empty state message
+- [x] Loading indicator
+- [x] Error state handling
+- [x] Filter by status functionality
+- [x] Sort options with persistence (localStorage)
 
 ### Tasks
 
@@ -361,15 +361,15 @@ This document outlines a phased approach to implementing Termfleet and the Works
 10. Test responsive design
 
 ### Acceptance Criteria
-- [ ] Dashboard loads at `/dashboard`
-- [ ] Workstations display as cards
-- [ ] Filters work correctly
-- [ ] Sorting works in both directions
-- [ ] Auto-refresh works every 5 seconds
-- [ ] Clicking domain opens new tab
-- [ ] TTY button works
-- [ ] Responsive on mobile/tablet
-- [ ] No TypeScript errors
+- [x] Dashboard loads at `/dashboard`
+- [x] Workstations display as cards
+- [x] Filters work correctly
+- [x] Sorting works in both directions
+- [x] Auto-refresh works every 5 seconds
+- [x] Clicking domain opens new tab
+- [x] TTY button works
+- [x] Responsive on mobile/tablet
+- [x] No TypeScript errors
 
 ---
 
@@ -384,27 +384,27 @@ This document outlines a phased approach to implementing Termfleet and the Works
 ### Deliverables
 
 #### Build Configuration
-- [ ] Vite build configuration
+- [x] Vite build configuration
   - Build React app to `dist/` directory
   - Source maps for debugging
   - Asset optimization
   - Environment-specific builds
-- [ ] TypeScript build for server
+- [x] TypeScript build for server
 
 #### Static Serving
-- [ ] Express middleware to serve static files (`dist/`)
+- [x] Express middleware to serve static files (`dist/`)
   - Serve `/` → index.html (SPA)
   - Serve `/dashboard` → index.html (React Router)
   - Serve API routes separately
-- [ ] `src/server/middleware/serveStatic.ts`
+- [x] `src/server/middleware/serveStatic.ts`
   - Proper content-type headers
   - Cache control headers
   - Fallback to index.html for SPA routes
 
 #### Package Scripts
-- [ ] `npm run build` - Build React + TypeScript
-- [ ] `npm start` - Start production server
-- [ ] `npm run dev` - Start dev server (both client/server)
+- [x] `npm run build` - Build React + TypeScript
+- [x] `npm start` - Start production server
+- [x] `npm run dev` - Start dev server (both client/server)
 
 ### Tasks
 
@@ -416,12 +416,12 @@ This document outlines a phased approach to implementing Termfleet and the Works
 6. Add proper cache headers
 
 ### Acceptance Criteria
-- [ ] `npm run build` succeeds
-- [ ] `dist/` directory created with compiled React app
-- [ ] `npm start` serves app on port 3000
-- [ ] Dashboard loads at `/dashboard`
-- [ ] API routes functional
-- [ ] Static files cached (no re-download)
+- [x] `npm run build` succeeds
+- [x] `dist/` directory created with compiled React app
+- [x] `npm start` serves app on port 3000
+- [x] Dashboard loads at `/dashboard`
+- [x] API routes functional
+- [x] Static files cached (no re-download)
 
 ---
 
@@ -436,7 +436,7 @@ This document outlines a phased approach to implementing Termfleet and the Works
 ### Deliverables
 
 #### Bootstrap Script
-- [ ] Workstation registration service script (`src/register-workstation.sh`)
+- [x] Workstation registration service script (`src/register-workstation.sh`)
   - Runs as systemd service or via userdata.sh
   - Source environment variables:
     - TERMFLEET_ENDPOINT
@@ -449,14 +449,14 @@ This document outlines a phased approach to implementing Termfleet and the Works
   - Handle DNS registration failure cases
 
 #### Systemd Service (Optional)
-- [ ] Systemd service file for auto-start
+- [x] Systemd service file for auto-start
   - Set dependencies (After=network-online.target)
   - Restart policy
   - Working directory
   - User/group
 
 #### Integration with Userdata
-- [ ] Modify `src/userdata.sh` to:
+- [x] Modify `src/userdata.sh` to:
   - Accept TERMFLEET_ENDPOINT as parameter
   - Accept WORKSTATION_NAME as parameter
   - Call registration service at startup
@@ -464,7 +464,7 @@ This document outlines a phased approach to implementing Termfleet and the Works
   - Handle registration failures gracefully
 
 #### Logging
-- [ ] Log file output from registration service
+- [x] Log file output from registration service
   - `var/log/workstation-registration.log`
   - Timestamps for each attempt
   - Success/failure messages
@@ -482,13 +482,13 @@ This document outlines a phased approach to implementing Termfleet and the Works
 8. Test re-registration with different IP
 
 ### Acceptance Criteria
-- [ ] Script runs on boot
-- [ ] Successfully registers with Termfleet
-- [ ] Retries on network failure
-- [ ] Logs to file with timestamps
-- [ ] Handles DNS registration failure
-- [ ] Can be run manually for testing
-- [ ] Works with environment variables
+- [x] Script runs on boot
+- [x] Successfully registers with Termfleet
+- [x] Retries on network failure
+- [x] Logs to file with timestamps
+- [x] Handles DNS registration failure
+- [x] Can be run manually for testing
+- [x] Works with environment variables
 
 ---
 
