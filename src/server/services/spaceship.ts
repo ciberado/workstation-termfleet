@@ -65,15 +65,25 @@ export async function registerDnsRecord(
   ipAddress: string
 ): Promise<{ domain: string; success: boolean }> {
   const domain = config.baseDomain;
-  const fullDomain = `${workstationName}.${domain}`;
+  
+  // Handle subdomain prefix for nested subdomains (e.g., desk1.ws.aprender.cloud)
+  // If subdomainPrefix is set (e.g., "ws"), the record name becomes "desk1.ws"
+  // and the DNS zone is the base domain (e.g., "aprender.cloud")
+  const recordName = config.subdomainPrefix 
+    ? `${workstationName}.${config.subdomainPrefix}` 
+    : workstationName;
+  
+  const fullDomain = config.subdomainPrefix
+    ? `${workstationName}.${config.subdomainPrefix}.${domain}`
+    : `${workstationName}.${domain}`;
 
-  logger.info('Registering DNS record', { workstationName, ipAddress, fullDomain });
+  logger.info('Registering DNS record', { workstationName, recordName, ipAddress, fullDomain, domain });
 
   try {
     // Create or update A record using Spaceship API
     const record: DnsRecord = {
       type: 'A',
-      name: workstationName,
+      name: recordName,
       address: ipAddress,
       ttl: config.dnsTtl,
     };

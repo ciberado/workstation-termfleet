@@ -97,6 +97,7 @@ export interface Config {
   port: number;
   nodeEnv: string;
   baseDomain: string;
+  subdomainPrefix: string; // Optional subdomain prefix (e.g., "ws" for ws.aprender.cloud)
   workstationCheckInterval: number;
   healthCheckTimeout: number;
   spaceshipApiKey: string;

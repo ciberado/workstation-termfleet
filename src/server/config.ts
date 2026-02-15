@@ -12,6 +12,7 @@ function loadConfig(): Config {
     port: parseInt(process.env.TERMFLEET_PORT || '8080', 10),
     nodeEnv: process.env.NODE_ENV || 'development',
     baseDomain: process.env.TERMFLEET_BASE_DOMAIN || '',
+    subdomainPrefix: process.env.TERMFLEET_SUBDOMAIN_PREFIX || '',
     workstationCheckInterval: parseInt(
       process.env.TERMFLEET_WORKSTATION_CHECK_INTERVAL || '20000',
       10

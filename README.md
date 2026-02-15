@@ -86,12 +86,21 @@ STARTING → ONLINE ─────────┐
    # Required
    TERMFLEET_SPACESHIP_API_KEY=your_api_key_here
    TERMFLEET_SPACESHIP_API_SECRET=your_api_secret_here
-   TERMFLEET_BASE_DOMAIN=ws.aprender.cloud
+   TERMFLEET_BASE_DOMAIN=aprender.cloud
+   
+   # Optional - Subdomain prefix for workstations (e.g., desk1.ws.aprender.cloud)
+   TERMFLEET_SUBDOMAIN_PREFIX=ws
    
    # Optional - defaults provided
    TERMFLEET_PORT=8080
    NODE_ENV=production
    ```
+   
+   **Domain Configuration:**
+   - `TERMFLEET_BASE_DOMAIN`: Your Spaceship.com domain (e.g., `aprender.cloud`)
+   - `TERMFLEET_SUBDOMAIN_PREFIX`: Optional subdomain prefix (e.g., `ws`)
+   - Result: Workstation `desk1` becomes `desk1.ws.aprender.cloud`
+   - If no prefix: Workstation `desk1` becomes `desk1.aprender.cloud`
 
 3. **Start with Docker Compose**
    ```bash
