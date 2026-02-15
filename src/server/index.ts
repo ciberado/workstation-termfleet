@@ -20,7 +20,8 @@ export function createApp(): Express {
   const app = express();
 
   // Trust proxy headers (needed when behind reverse proxy/load balancer)
-  app.set('trust proxy', true);
+  // In development, we're directly exposed; in production, trust the first proxy
+  app.set('trust proxy', config.nodeEnv === 'production' ? 1 : false);
 
   // Basic middleware
   app.use(cors());
