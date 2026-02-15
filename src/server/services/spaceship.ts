@@ -11,14 +11,24 @@ interface DnsRecord {
 }
 
 /**
- * Make authenticated request to Spaceship API
+ * Sleep for specified milliseconds
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Make authenticated request to Spaceship API with retry logic
  */
 async function spaceshipRequest<T>(
   method: string,
   endpoint: string,
-  body?: unknown
+  body?: unknown,
+  retryCount = 0
 ): Promise<T> {
   const url = `${SPACESHIP_API_BASE}${endpoint}`;
+  const maxRetries = 3;
+  const baseDelay = 1000; // 1 second
 
   const headers: Record<string, string> = {
     'X-API-Key': config.spaceshipApiKey,
@@ -27,13 +37,30 @@ async function spaceshipRequest<T>(
   };
 
   try {
-    logger.debug('Spaceship API request', { method, endpoint });
+    logger.debug('Spaceship API request', { method, endpoint, retryCount });
 
     const response = await fetch(url, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
+
+    // Handle rate limiting with exponential backoff
+    if (response.status === 429) {
+      if (retryCount < maxRetries) {
+        const delay = baseDelay * Math.pow(2, retryCount);
+        logger.warn('Spaceship API rate limit hit, retrying', {
+          method,
+          endpoint,
+          retryCount: retryCount + 1,
+          delayMs: delay,
+        });
+        await sleep(delay);
+        return spaceshipRequest<T>(method, endpoint, body, retryCount + 1);
+      } else {
+        throw new Error(`Spaceship API rate limit exceeded after ${maxRetries} retries`);
+      }
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -48,9 +75,24 @@ async function spaceshipRequest<T>(
     const data = await response.json();
     return data as T;
   } catch (error) {
+    // Retry on network errors (but not on API errors)
+    if (retryCount < maxRetries && error instanceof TypeError) {
+      const delay = baseDelay * Math.pow(2, retryCount);
+      logger.warn('Spaceship API network error, retrying', {
+        method,
+        endpoint,
+        retryCount: retryCount + 1,
+        delayMs: delay,
+        error: error.message,
+      });
+      await sleep(delay);
+      return spaceshipRequest<T>(method, endpoint, body, retryCount + 1);
+    }
+
     logger.error('Spaceship API request failed', {
       method,
       endpoint,
+      retryCount,
       error: error instanceof Error ? error.message : String(error),
     });
     throw error;
