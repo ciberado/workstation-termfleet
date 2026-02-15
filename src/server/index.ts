@@ -19,6 +19,9 @@ import './db/index.js';
 export function createApp(): Express {
   const app = express();
 
+  // Trust proxy headers (needed when behind reverse proxy/load balancer)
+  app.set('trust proxy', true);
+
   // Basic middleware
   app.use(cors());
   app.use(express.json());

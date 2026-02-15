@@ -159,6 +159,19 @@ export function updateWorkstation(name: string, updates: Partial<Workstation>): 
  * Delete workstation
  */
 export function deleteWorkstation(name: string): boolean {
+  // First, get the workstation ID
+  const ws = db.prepare('SELECT id FROM workstations WHERE name = ?').get(name) as { id: string } | undefined;
+  
+  if (!ws) {
+    logger.debug('Workstation not found for deletion', { name });
+    return false;
+  }
+
+  // Delete associated events first (to satisfy foreign key constraint)
+  const eventsStmt = db.prepare('DELETE FROM workstation_events WHERE workstation_id = ?');
+  eventsStmt.run(ws.id);
+
+  // Then delete the workstation
   const stmt = db.prepare('DELETE FROM workstations WHERE name = ?');
   const result = stmt.run(name);
 
