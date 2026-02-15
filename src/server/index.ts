@@ -19,9 +19,10 @@ import './db/index.js';
 export function createApp(): Express {
   const app = express();
 
-  // Trust proxy headers (needed when behind reverse proxy/load balancer)
-  // In development, we're directly exposed; in production, trust the first proxy
-  app.set('trust proxy', config.nodeEnv === 'production' ? 1 : false);
+  // Trust proxy headers
+  // In dev containers, VS Code port forwarding adds X-Forwarded-For
+  // In production, trust the first proxy (load balancer)
+  app.set('trust proxy', 1);
 
   // Basic middleware
   app.use(cors());
