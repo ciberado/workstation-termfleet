@@ -75,3 +75,22 @@ export async function checkPropagation(name: string): Promise<{
 
   return data.data as any;
 }
+
+/**
+ * Delete/hide a workstation
+ */
+export async function deleteWorkstation(name: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/workstations/${name}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.statusText}`);
+  }
+
+  const data: ApiResponse = await response.json();
+
+  if (!data.success) {
+    throw new Error(data.error || 'Failed to delete workstation');
+  }
+}

@@ -240,4 +240,29 @@ router.get(
   })
 );
 
+/**
+ * DELETE /api/workstations/:name
+ * Delete/hide a workstation
+ */
+router.delete(
+  '/:name',
+  asyncHandler(async (req: Request, res: Response) => {
+    const { name } = req.params;
+
+    const workstation = getWorkstationByName(name);
+
+    if (!workstation) {
+      return sendError(res, 'Workstation not found', ErrorCode.NOT_FOUND, 404);
+    }
+
+    const deleted = deleteWorkstation(name);
+
+    if (!deleted) {
+      return sendError(res, 'Failed to delete workstation', ErrorCode.INTERNAL_ERROR, 500);
+    }
+
+    return sendSuccess(res, { name, deleted: true });
+  })
+);
+
 export default router;

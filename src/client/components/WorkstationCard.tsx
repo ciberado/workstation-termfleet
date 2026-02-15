@@ -1,21 +1,42 @@
 import { Card, Badge, Text, Button, Group, Stack } from '@mantine/core';
-import { IconExternalLink } from '@tabler/icons-react';
+import { IconExternalLink, IconTrash } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Workstation, WorkstationStatus } from '@/shared/types';
+import { deleteWorkstation } from '@/client/services/api';
+import { notifications } from '@mantine/notifications';
 
 dayjs.extend(relativeTime);
 
 interface WorkstationCardProps {
   workstation: Workstation;
+  onDeleted?: () => void;
 }
 
-export function WorkstationCard({ workstation }: WorkstationCardProps) {
+export function WorkstationCard({ workstation, onDeleted }: WorkstationCardProps) {
   const statusColor = getStatusColor(workstation.status);
 
   const handleOpenTtyd = () => {
     const url = `https://${workstation.domain_name}`;
     window.open(url, '_blank');
+  };
+
+  const handleHide = async () => {
+    try {
+      await deleteWorkstation(workstation.name);
+      notifications.show({
+        title: 'Success',
+        message: `Workstation "${workstation.name}" hidden`,
+        color: 'green',
+      });
+      onDeleted?.();
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Failed to hide workstation',
+        color: 'red',
+      });
+    }
   };
 
   return (
@@ -67,16 +88,37 @@ export function WorkstationCard({ workstation }: WorkstationCardProps) {
         </Stack>
 
         {/* Actions */}
-        <Button
-          fullWidth
-          variant="filled"
-          color="blue"
-          rightSection={<IconExternalLink size={16} />}
-          onClick={handleOpenTtyd}
-          disabled={workstation.status === WorkstationStatus.TERMINATED || workstation.status === WorkstationStatus.DNS_FAILED}
-        >
-          Open Terminal
-        </Button>
+        {workstation.status === WorkstationStatus.ONLINE ? (
+          <Button
+            fullWidth
+            variant="filled"
+            color="blue"
+            rightSection={<IconExternalLink size={16} />}
+            onClick={handleOpenTtyd}
+          >
+            Open Terminal
+          </Button>
+        ) : (
+          <Group grow>
+            <Button
+              variant="filled"
+              color="blue"
+              rightSection={<IconExternalLink size={16} />}
+              onClick={handleOpenTtyd}
+              disabled={workstation.status === WorkstationStatus.TERMINATED || workstation.status === WorkstationStatus.DNS_FAILED}
+            >
+              Open Terminal
+            </Button>
+            <Button
+              variant="light"
+              color="red"
+              rightSection={<IconTrash size={16} />}
+              onClick={handleHide}
+            >
+              Hide
+            </Button>
+          </Group>
+        )}
       </Stack>
     </Card>
   );

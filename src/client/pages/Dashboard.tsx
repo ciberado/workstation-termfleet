@@ -155,7 +155,7 @@ function Dashboard() {
         <Grid>
           {workstations.map((ws) => (
             <Grid.Col key={ws.id} span={{ base: 12, md: 6, lg: 4 }}>
-              <WorkstationCard workstation={ws} />
+              <WorkstationCard workstation={ws} onDeleted={loadWorkstations} />
             </Grid.Col>
           ))}
         </Grid>
