@@ -6,6 +6,7 @@ import {
   getWorkstationByName,
   getAllWorkstations,
   updateWorkstation,
+  deleteWorkstation,
   createEvent,
 } from '../db/index.js';
 import { registerDnsRecord, checkDnsPropagation } from '../services/spaceship.js';
