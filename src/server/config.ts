@@ -9,7 +9,7 @@ dotenv.config();
  */
 function loadConfig(): Config {
   const config: Config = {
-    port: parseInt(process.env.TERMFLEET_PORT || '3000', 10),
+    port: parseInt(process.env.TERMFLEET_PORT || '8080', 10),
     nodeEnv: process.env.NODE_ENV || 'development',
     baseDomain: process.env.TERMFLEET_BASE_DOMAIN || '',
     workstationCheckInterval: parseInt(

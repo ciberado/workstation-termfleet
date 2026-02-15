@@ -37,12 +37,12 @@ RUN mkdir -p /app/data /app/logs && \
 # Switch to non-root user
 USER node
 
-# Expose port (default 3000, configurable via env)
-EXPOSE 3000
+# Expose port (default 8080, configurable via env)
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:${TERMFLEET_PORT:-3000}/health', (r) => { if (r.statusCode !== 200) throw new Error('Health check failed'); })"
+  CMD node -e "require('http').get('http://localhost:${TERMFLEET_PORT:-8080}/health', (r) => { if (r.statusCode !== 200) throw new Error('Health check failed'); })"
 
 # Start application
 CMD ["node", "dist/server/index.js"]

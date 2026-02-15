@@ -89,7 +89,7 @@ STARTING → ONLINE ─────────┐
    TERMFLEET_BASE_DOMAIN=ws.aprender.cloud
    
    # Optional - defaults provided
-   TERMFLEET_PORT=3000
+   TERMFLEET_PORT=8080
    NODE_ENV=production
    ```
 
@@ -107,7 +107,7 @@ STARTING → ONLINE ─────────┐
 
 4. **Access Dashboard**
    
-   Open http://localhost:3000 in your browser
+   Open http://localhost:8080 in your browser
 
 ### Option 2: Traditional Installation
 
@@ -132,7 +132,7 @@ STARTING → ONLINE ─────────┐
    BASE_DOMAIN=ws.aprender.cloud
    
    # Optional - defaults provided
-   PORT=3000
+   PORT=8080
    NODE_ENV=development
    DATABASE_PATH=./termfleet.db
    ```
@@ -153,7 +153,7 @@ STARTING → ONLINE ─────────┐
 
 5. **Access Dashboard**
    
-   Open http://localhost:3000 in your browser
+   Open http://localhost:8080 in your browser
 
 ## Development
 
@@ -250,7 +250,7 @@ systemctl enable --now termfleet-registration.service
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `NODE_ENV` | `development` | Environment mode |
-| `PORT` | `3000` | Server port |
+| `PORT` | `8080` | Server port |
 | `DATABASE_PATH` | `./termfleet.db` | SQLite database file |
 | `LOG_LEVEL` | `debug` | Winston log level |
 | `LOG_FILE` | `./logs/termfleet.log` | Log file path |
@@ -478,7 +478,7 @@ Docker support is planned for easier deployment.
 **Solution**:
 ```bash
 # Check port availability
-lsof -i :3000
+lsof -i :8080
 
 # Check database file permissions
 ls -la termfleet.db
